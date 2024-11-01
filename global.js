@@ -1,5 +1,5 @@
 
-process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
+process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '1';
 import './config.js'; 
 import { createRequire } from "module"; // Bring in the ability to create the 'require' method
 import path, { join } from 'path'
@@ -35,7 +35,7 @@ import readline from 'readline'
 import fs from 'fs'
 const { CONNECTING } = ws
 const { chain } = lodash
-const PORT = process.env.PORT || process.env.SERVER_PORT || 3000
+const PORT = process.env.PORT || process.env.SERVER_PORT || 5000
 
 protoType()
 serialize()
@@ -106,7 +106,7 @@ const question = (texto) => new Promise((resolver) => rl.question(texto, resolve
 let opcion
 if (!fs.existsSync(`./${authFile}/creds.json`) && !methodCodeQR && !methodCode) {
 while (true) {
-opcion = await question("\n\n✳️ Enter Connection method\n🔺 1 : for QR Code\n🔺 2 : for PairingCode\n\n\n")
+opcion = await question("\n\n✳️ Enter the connection method\n🔺 1 : for QR\n🔺 2 : for CÓDE\n\n\n")
 if (opcion === '1' || opcion === '2') {
 break
 } else {
@@ -139,54 +139,263 @@ const connectionOptions = {
   }
 
 //--
-global.conn = makeWASocket(connectionOptions);
+global.conn = makeWASocket(connectionOptions)
 
 if (opcion === '2' || methodCode) {
-  if (!conn.authState.creds.registered) {
-    if (MethodMobile) throw new Error('⚠️ An Error Occurred');
-    let addNumber;
-    if (!!phoneNumber) {
-      addNumber = phoneNumber.replace(/[^0-9]/g, '');
-      if (!Object.keys(PHONENUMBER_MCC).some(v => addNumber.startsWith(v))) {
-        console.log(chalk.bgBlack(chalk.bold.redBright("\n\n✴️ Number must start with the country code")));
-        process.exit(0);
-      }
-    } else {
-      while (true) {
-        addNumber = await question(chalk.bgBlack(chalk.bold.greenBright("\n\n✳️ Write Your Number\n\nExample: 923444844xxxx\n\n\n\n")));
-        addNumber = addNumber.replace(/[^0-9]/g, '');
-        if (addNumber.match(/^\d+$/) && Object.keys(PHONENUMBER_MCC).some(v => addNumber.startsWith(v))) {
-          break;
-        } else {
-          console.log(chalk.bgBlack(chalk.bold.redBright("\n\n✴️ Make Sure To Add Country Code First")));
-        }
-      }
-    }
-    setTimeout(async () => {
-      let codeBot = await conn.requestPairingCode(addNumber);
-      codeBot = codeBot?.match(/.{1,4}/g)?.join("-") || codeBot;
-      console.log(chalk.bold.red(`\n\n🟢 Your Code Is:  ${codeBot}\n\n`));
-      rl.close();
-    }, 3000);
+  if (!conn.authState.creds.registered) {  
+  if (MethodMobile) throw new Error('⚠️ An Error Occurred')
+  
+  let addNumber
+  if (!!phoneNumber) {
+  addNumber = phoneNumber.replace(/[^0-9]/g, '')
+	  const PHONENUMBER_MCC = {
+    '93': 'Afghanistan',
+    '355': 'Albania',
+    '213': 'Algeria',
+    '376': 'Andorra',
+    '244': 'Angola',
+    '1': 'Antigua and Barbuda',
+    '54': 'Argentina',
+    '374': 'Armenia',
+    '297': 'Aruba',
+    '61': 'Australia',
+    '43': 'Austria',
+    '994': 'Azerbaijan',
+    '1': 'Bahamas',
+    '973': 'Bahrain',
+    '880': 'Bangladesh',
+    '1': 'Barbados',
+    '375': 'Belarus',
+    '32': 'Belgium',
+    '501': 'Belize',
+    '229': 'Benin',
+    '1': 'Bermuda',
+    '975': 'Bhutan',
+    '591': 'Bolivia',
+    '387': 'Bosnia and Herzegovina',
+    '267': 'Botswana',
+    '55': 'Brazil',
+    '673': 'Brunei',
+    '359': 'Bulgaria',
+    '226': 'Burkina Faso',
+    '257': 'Burundi',
+    '855': 'Cambodia',
+    '237': 'Cameroon',
+    '1': 'Canada',
+    '238': 'Cape Verde',
+    '345': 'Cayman Islands',
+    '61': 'Central African Republic',
+    '236': 'Chad',
+    '56': 'Chile',
+    '86': 'China',
+    '61': 'Christmas Island',
+    '57': 'Colombia',
+    '269': 'Comoros',
+    '682': 'Cook Islands',
+    '506': 'Costa Rica',
+    '225': 'Ivory Coast',
+    '385': 'Croatia',
+    '53': 'Cuba',
+    '357': 'Cyprus',
+    '420': 'Czech Republic',
+    '45': 'Denmark',
+    '253': 'Djibouti',
+    '1': 'Dominica',
+    '1809': 'Dominican Republic',
+    '593': 'Ecuador',
+    '20': 'Egypt',
+    '503': 'El Salvador',
+    '240': 'Equatorial Guinea',
+    '291': 'Eritrea',
+    '372': 'Estonia',
+    '251': 'Ethiopia',
+    '679': 'Fiji',
+    '358': 'Finland',
+    '33': 'France',
+    '241': 'Gabon',
+    '220': 'Gambia',
+    '995': 'Georgia',
+    '49': 'Germany',
+    '233': 'Ghana',
+    '350': 'Gibraltar',
+    '30': 'Greece',
+    '299': 'Greenland',
+    '1': 'Grenada',
+    '590': 'Guadeloupe',
+    '1': 'Guam',
+    '502': 'Guatemala',
+    '224': 'Guinea',
+    '245': 'Guinea-Bissau',
+    '592': 'Guyana',
+    '509': 'Haiti',
+    '504': 'Honduras',
+    '36': 'Hungary',
+    '354': 'Iceland',
+    '91': 'India',
+    '62': 'Indonesia',
+    '964': 'Iraq',
+    '98': 'Iran',
+    '354': 'Iceland',
+    '39': 'Italy',
+    '972': 'Israel',
+    '1': 'Jamaica',
+    '81': 'Japan',
+    '962': 'Jordan',
+    '7': 'Kazakhstan',
+    '254': 'Kenya',
+    '686': 'Kiribati',
+    '965': 'Kuwait',
+    '996': 'Kyrgyzstan',
+    '856': 'Laos',
+    '371': 'Latvia',
+    '961': 'Lebanon',
+    '266': 'Lesotho',
+    '231': 'Liberia',
+    '218': 'Libya',
+    '423': 'Liechtenstein',
+    '370': 'Lithuania',
+    '352': 'Luxembourg',
+    '853': 'Macau',
+    '389': 'Macedonia',
+    '261': 'Madagascar',
+    '265': 'Malawi',
+    '60': 'Malaysia',
+    '960': 'Maldives',
+    '223': 'Mali',
+    '356': 'Malta',
+    '692': 'Marshall Islands',
+    '596': 'Martinique',
+    '222': 'Mauritania',
+    '230': 'Mauritius',
+    '262': 'Mayotte',
+    '52': 'Mexico',
+    '691': 'Micronesia',
+    '373': 'Moldova',
+    '377': 'Monaco',
+    '976': 'Mongolia',
+    '382': 'Montenegro',
+    '1': 'Montserrat',
+    '212': 'Morocco',
+    '258': 'Mozambique',
+    '95': 'Myanmar',
+    '264': 'Namibia',
+    '674': 'Nauru',
+    '977': 'Nepal',
+    '31': 'Netherlands',
+    '687': 'New Caledonia',
+    '64': 'New Zealand',
+    '505': 'Nicaragua',
+    '227': 'Niger',
+    '234': 'Nigeria',
+    '683': 'Niue',
+    '850': 'North Korea',
+    '47': 'Norway',
+    '968': 'Oman',
+    '92': 'Pakistan',
+    '680': 'Palau',
+    '507': 'Panama',
+    '675': 'Papua New Guinea',
+    '595': 'Paraguay',
+    '51': 'Peru',
+    '63': 'Philippines',
+    '48': 'Poland',
+    '351': 'Portugal',
+    '1': 'Puerto Rico',
+    '974': 'Qatar',
+    '40': 'Romania',
+    '7': 'Russia',
+    '250': 'Rwanda',
+    '590': 'Saint Barthélemy',
+    '1': 'Saint Helena',
+    '758': 'Saint Kitts and Nevis',
+    '590': 'Saint Martin',
+    '1': 'Saint Vincent and the Grenadines',
+    '685': 'Samoa',
+    '378': 'San Marino',
+    '966': 'Saudi Arabia',
+    '221': 'Senegal',
+    '381': 'Serbia',
+    '248': 'Seychelles',
+    '232': 'Sierra Leone',
+    '65': 'Singapore',
+    '421': 'Slovakia',
+    '386': 'Slovenia',
+    '677': 'Solomon Islands',
+    '252': 'Somalia',
+    '27': 'South Africa',
+    '82': 'South Korea',
+    '34': 'Spain',
+    '94': 'Sri Lanka',
+    '249': 'Sudan',
+    '597': 'Suriname',
+    '268': 'Eswatini',
+    '46': 'Sweden',
+    '41': 'Switzerland',
+    '963': 'Syria',
+    '886': 'Taiwan',
+    '992': 'Tajikistan',
+    '255': 'Tanzania',
+    '66': 'Thailand',
+    '670': 'Timor-Leste',
+    '228': 'Togo',
+    '676': 'Tonga',
+    '1': 'Trinidad and Tobago',
+    '216': 'Tunisia',
+    '90': 'Turkey',
+    '993': 'Turkmenistan',
+    '256': 'Uganda',
+    '380': 'Ukraine',
+    '971': 'United Arab Emirates',
+    '44': 'United Kingdom',
+    '1': 'United States',
+    '598': 'Uruguay',
+    '998': 'Uzbekistan',
+    '678': 'Vanuatu',
+    '58': 'Venezuela',
+    '84': 'Vietnam',
+    '681': 'Wallis and Futuna',
+    '967': 'Yemen',
+    '260': 'Zambia',
+    '263': 'Zimbabwe',
+    // Add more if needed to reach 207
+};
+  if (!Object.keys(PHONENUMBER_MCC).some(v => addNumber.startsWith(v))) {
+  console.log(chalk.bgBlack(chalk.bold.redBright("\n\n✴️ Your number must begin with the country code")))
+  process.exit(0)
+  }} else {
+  while (true) {
+  addNumber = await question(chalk.bgBlack(chalk.bold.greenBright("\n\n✳️ Enter Your Number\n\nExample: 923444844060\n\n\n\n")))
+  addNumber = addNumber.replace(/[^0-9]/g, '')
+  
+  if (addNumber.match(/^\d+$/) && Object.keys(PHONENUMBER_MCC).some(v => addNumber.startsWith(v))) {
+  break 
+  } else {
+  console.log(chalk.bgBlack(chalk.bold.redBright("\n\n✴️ Make sure to add the country code")))
+  }}
+ 
   }
-}
-
-conn.isInit = false;
+  
+  setTimeout(async () => {
+  let codeBot = await conn.requestPairingCode(addNumber)
+  codeBot = codeBot?.match(/.{1,4}/g)?.join("-") || codeBot
+  console.log(chalk.bold.red(`\n\n🟢   Your Code is:  ${codeBot}\n\n`)) 
+  rl.close()
+  }, 3000)
+  }}
+conn.isInit = false
 
 if (!opts['test']) {
   setInterval(async () => {
-    if (global.db.data) await global.db.write().catch(console.error);
-    if (opts['autocleartmp']) {
-      try {
-        clearTmp();
-      } catch (e) {
-        console.error(e);
-      }
-    }
-  }, 60 * 1000);
+    if (global.db.data) await global.db.write().catch(console.error)
+    if (opts['autocleartmp']) try {
+      clearTmp()
+
+    } catch (e) { console.error(e) }
+  }, 60 * 1000)
 }
 
-if (opts['server']) (await import('./server.js')).default(global.conn, PORT);
+if (opts['server']) (await import('./server.js')).default(global.conn, PORT)
+
 /* Clear */
 async function clearTmp() {
   const tmp = [tmpdir(), join(__dirname, './tmp')]
@@ -203,7 +412,7 @@ async function clearTmp() {
 
 setInterval(async () => {
 	await clearTmp()
-	//console.log(chalk.cyan(`✅  Auto clear  | Successfully Cleaned tmp`))
+	//console.log(chalk.cyan(`✅  Auto clear  | Cleaned Temporary Files`))
 }, 60000) //1 munto
 
 async function connectionUpdate(update) {
@@ -216,8 +425,8 @@ async function connectionUpdate(update) {
   }
   
   if (global.db.data == null) loadDatabase()
-
-} //-- cu 
+}
+//-- cu 
 
 process.on('uncaughtException', console.error)
 // let strQuot = /(["'])(?:(?=(\\?))\2.)*?\1/
@@ -247,14 +456,14 @@ global.reloadHandler = async function (restatConn) {
     conn.ev.off('creds.update', conn.credsUpdate)
   }
 
-  conn.welcome = 'Hello, @user\nWelcome To @group'
-  conn.bye = 'Good Bye @user'
-  conn.spromote = '@user promoted to admin'
-  conn.sdemote = '@user demoted'
-  conn.sDesc = 'Group description has been changed to \n@desc'
-  conn.sSubject = 'Group Name Has been Changed to \n@group'
-  conn.sIcon = 'The group icon has been updated'
-  conn.sRevoke = 'The group link has been reset to \n@revoke'
+  conn.welcome = 'Hello @user\nWelcome to @group'
+  conn.bye = 'GoodBye @user'
+  conn.spromote = '@user Promoted to admin'
+  conn.sdemote = '@user Demoted'
+  conn.sDesc = 'Description has been changed to \n@desc'
+  conn.sSubject = 'The group name has been changed to \n@group'
+  conn.sIcon = 'The group icon has been changed'
+  conn.sRevoke = 'The group link has been changed to \n@revoke'
   conn.handler = handler.handler.bind(global.conn)
   conn.participantsUpdate = handler.participantsUpdate.bind(global.conn)
   conn.groupsUpdate = handler.groupsUpdate.bind(global.conn)
@@ -271,26 +480,6 @@ global.reloadHandler = async function (restatConn) {
   isInit = false
   return true
 }
-import autoreactCommand from './plugins/Autoreact.js';
-
-// Declare the commands map here to make it accessible globally
-const commands = new Map(); // Ensure commands is defined
-
-// Ensure this listener is properly set up
-conn.ev.on('messages.upsert', async (msg) => {
-  const m = msg.messages[0];
-  if (!m.message) return;
-
-  // Call the autoreact command handler directly
-  await autoreactCommand(m, { conn });
-  // Add other global message handling logic here if needed
-});
-
-// Register commands globally
-commands.set('autoreact', autoreactCommand);
-
-// If you have any other command registration logic, include it here
-
 
 const pluginFolder = global.__dirname(join(__dirname, './plugins/index'))
 const pluginFilter = filename => /\.js$/.test(filename)
@@ -313,12 +502,12 @@ global.reload = async (_ev, filename) => {
   if (pluginFilter(filename)) {
     let dir = global.__filename(join(pluginFolder, filename), true)
     if (filename in global.plugins) {
-      if (existsSync(dir)) conn.logger.info(`Plugin Updated - '${filename}'`)
+      if (existsSync(dir)) conn.logger.info(`🌟 Plugin Updated - '${filename}'`)
       else {
-        conn.logger.warn(`Plugin Removed - '${filename}'`)
+        conn.logger.warn(`🗑️ Plugin Removed - '${filename}'`)
         return delete global.plugins[filename]
       }
-    } else conn.logger.info(`New plugin - '${filename}'`)
+    } else conn.logger.info(`✨ New plugin - '${filename}'`)
     let err = syntaxerror(readFileSync(dir), filename, {
       sourceType: 'module',
       allowAwaitOutsideFunction: true
@@ -380,5 +569,5 @@ async function _quickTest() {
 }
 
 _quickTest()
-  .then(() => conn.logger.info('✅ Quick Test Performed!'))
+  .then(() => conn.logger.info('✅ Quick Test Performed Successfully'))
   .catch(console.error)
